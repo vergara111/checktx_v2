@@ -1,7 +1,17 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   //console.log('fetching jito bundle...')
-  if (request.type === 'fetchJitoBundle') {
-    const apiUrl = `https://bundles.jito.wtf/api/v1/bundles/transaction/${request.signature}`;
+if (request.type === 'fetchJitoBundle') {
+  const signature = String(request.signature || '');
+
+  if (!/^[1-9A-HJ-NP-Za-km-z]{32,88}$/.test(signature)) {
+    sendResponse({
+      success: false,
+      error: 'Invalid Solana transaction signature'
+    });
+    return false;
+  }
+
+  const apiUrl = `https://bundles.jito.wtf/api/v1/bundles/transaction/${encodeURIComponent(signature)}`;
     fetch(apiUrl)
       .then(response => response.json())
       .then(data => {

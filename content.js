@@ -21,12 +21,12 @@ function checkForJitoBundle() {
   // Wait for the page to fully load its data
   notificationTimeout = setTimeout(() => {
     // Get the transaction signature from the URL
-    const txSignature = window.location.pathname.split('/tx/')[1];
-    if (!txSignature) {
-      //console.log('can not get txs');
-      removeNotification();
-      return;
-    }
+const txSignature = window.location.pathname.split('/tx/')[1]?.split('?')[0]?.split('#')[0];
+
+if (!txSignature || !/^[1-9A-HJ-NP-Za-km-z]{32,88}$/.test(txSignature)) {
+  removeNotification();
+  return;
+}
     //console.log('sending ' + txSignature)
     // Call the background script to fetch data from the Jito API
     chrome.runtime.sendMessage(
@@ -73,7 +73,7 @@ function removeHoverNotification() {
 
 function showNotification(response) {
   // Remove any existing notifications first
-  isJitoBundle = response.isBundle;  
+  const isJitoBundle = response.isBundle;
   removeNotification();
 
   // Create a new notification element
@@ -94,10 +94,11 @@ function showNotification(response) {
     notification.style.color = 'white';
     textContent = '✓ tx is Jito bundle (tip: ' + response.validatorTip + ')';
     const adLink = document.createElement('a');
-    url = response.bundleUrl;
+    const url = response.bundleUrl;
     adLink.textContent = textContent;
     adLink.href = url;
     adLink.target = '_blank';
+    adLink.rel = 'noopener noreferrer';
     adLink.style.color = 'white';
     adLink.style.textDecoration = 'underline';
     adLink.style.fontWeight = 'bold';
@@ -118,9 +119,6 @@ function showNotification(response) {
     removeNotification();
   };
   notification.appendChild(closeButton);
-  
-  // Add advertisement
-  addAdvertisement(notification);
 
   // hide, show it for debug.
   notification.style.display = 'none'; 
@@ -134,7 +132,7 @@ function showNotification(response) {
 }
 
 function showHoverNotification(response, x, y) {
-  isJitoBundle = response.isBundle;
+  const isJitoBundle = response.isBundle;
   // Remove any existing hover notification
   removeHoverNotification();
 
@@ -156,12 +154,13 @@ function showHoverNotification(response, x, y) {
   if (isJitoBundle) {
     notification.style.backgroundColor = '#4CAF50';
     notification.style.color = 'white';
-    textContent = '✓ Jito bundle (tip: ' + response.validatorTip + ')';
+    const textContent = '✓ Jito bundle (tip: ' + response.validatorTip + ')';
     const adLink = document.createElement('a');
-    url = response.bundleUrl;
+    const url = response.bundleUrl;
     adLink.textContent = textContent;
     adLink.href = url;
     adLink.target = '_blank';
+    adLink.rel = 'noopener noreferrer';
     adLink.style.color = 'white';
     adLink.style.textDecoration = 'underline';
     adLink.style.fontWeight = 'bold';
@@ -171,9 +170,6 @@ function showHoverNotification(response, x, y) {
     notification.style.color = 'white';
     notification.textContent = '✗ NOT Jito bundle';
   }
-
-  // Add advertisement
-  addAdvertisement(notification, true);
 
   // Add the notification to the page
   document.body.appendChild(notification);
@@ -212,9 +208,6 @@ function showErrorNotification() {
     removeNotification();
   };
   notification.appendChild(closeButton);
-  
-  // Add advertisement
-  addAdvertisement(notification);
 
   // Add the notification to the page
   document.body.appendChild(notification);
@@ -223,36 +216,6 @@ function showErrorNotification() {
   notificationTimeout = setTimeout(() => {
     removeNotification();
   }, 10000);
-}
-
-function addAdvertisement(element, isHover = false) {
-  // Add advertisement
-  const adContainer = document.createElement('div');
-  adContainer.style.marginTop = '6px';
-  adContainer.style.fontSize = isHover ? '10px' : '12px';
-  adContainer.style.borderTop = '1px solid rgba(255, 255, 255, 0.3)';
-  adContainer.style.paddingTop = '6px';
-  adContainer.style.textAlign = 'center';
-  
-  const adText = document.createElement('span');
-  adText.textContent = 'by ';
-  
-  const adLink = document.createElement('a');
-  adLink.textContent = '0slot.trade';
-  adLink.href = 'https://0slot.trade';
-  adLink.target = '_blank';
-  adLink.style.color = 'white';
-  adLink.style.textDecoration = 'underline';
-  adLink.style.fontWeight = 'bold';
-  
-  if (isHover) {
-    adLink.style.pointerEvents = 'auto';
-    adLink.style.cursor = 'pointer';
-  }
-  
-  adContainer.appendChild(adText);
-  adContainer.appendChild(adLink);
-  element.appendChild(adContainer);
 }
 
 function extractSignatureFromLink(link) {
@@ -490,7 +453,7 @@ function attemptUpdateCustomDiv(maxAttempts = 30, attempt = 0) {
     isJitoBundle = global_response.isBundle;  
     let element = document.getElementById("jito-bundle-link");
     if (isJitoBundle) {    
-      bundleId = global_response.bundleId;      
+      const bundleId = global_response.bundleId;      
       if (element) {
         element.textContent = 'Jito (Tips: ' + global_response.validatorTip + ' SOL)';
         element.href = global_response.bundleUrl;
