@@ -322,58 +322,120 @@ function setupPageHandlers() {
   }
 }
 
-function insertCustomDiv(para_link, para_text) {
-
-  const divs = document.querySelectorAll("div");
-
-  const signerDiv = Array.from(divs).find(div => div.innerText.trim() === "Signer");
-  if (!signerDiv) {
-    console.log("failed for 'Signer' div");
-    return false;
-  }
-
-  const newDiv = document.createElement("div");
-  newDiv.innerHTML = `
-      <div class="flex flex-row flex-wrap justify-start grow-0 shrink-0 basis-full min-w-0 box-border -mx-4 sm:-mx-3 items-stretch gap-y-0">
-          <div class="max-w-24/24 md:max-w-6/24 flex-24/24 md:flex-6/24 block relative box-border my-0 px-4 sm:px-3">
-              <div class="flex gap-1 flex-row items-center justify-start flex-wrap">
-                  <div class="" data-state="closed">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-help text-neutral8 md:text-neutral5 font-medium md:font-normal">
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                          <path d="M12 17h.01"></path>
-                      </svg>
-                  </div>
-                  <div class="not-italic text-[14px] leading-[24px] text-neutral8 md:text-neutral5 font-medium md:font-normal">Landed By</div>
+function buildCustomBundleRow(para_link, para_text) {
+  const row = document.createElement("div");
+  row.id = "jito-bundle-row";
+  row.className = "flex flex-row flex-wrap justify-start grow-0 shrink-0 basis-full min-w-0 box-border -mx-4 sm:-mx-3 items-stretch gap-y-0";
+  row.innerHTML = `
+      <div class="max-w-24/24 md:max-w-6/24 flex-24/24 md:flex-6/24 block relative box-border my-0 px-4 sm:px-3">
+          <div class="flex gap-1 flex-row items-center justify-start flex-wrap">
+              <div class="" data-state="closed">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-help text-neutral8 md:text-neutral5 font-medium md:font-normal">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                      <path d="M12 17h.01"></path>
+                  </svg>
               </div>
+              <div class="not-italic text-[14px] leading-[24px] text-neutral8 md:text-neutral5 font-medium md:font-normal">Landed By</div>
           </div>
-          <div class="max-w-24/24 md:max-w-18/24 flex-24/24 md:flex-18/24 block relative box-border my-0 px-4 sm:px-3">
-              <div class="flex flex-col gap-2 items-stretch justify-start w-full">
-                  <div>
-                      <span class="w-auto max-w-full whitespace-nowrap">
-                          <div class="inline" data-state="closed">
-                              <span class="align-middle font-normal text-[14px] leading-[24px] border border-dashed border-transparent box-content break-all px-1 -mx-1 rounded-md textLink autoTruncate">
-                                  <a id="jito-bundle-link" class="text-current" href="${para_link}">${para_text}</a>
-                              </span>
-                          </div>
-                          <span class="inline-flex items-center ml-1 gap-2 align-middle" id="cp-jitobundle">
-                              <div class="inline-flex align-middle" data-state="closed">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy cursor-pointer text-[#adb5bd] hover:text-link-500">
-                                      <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
-                                      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
-                                  </svg>
-                              </div>
+      </div>
+      <div class="max-w-24/24 md:max-w-18/24 flex-24/24 md:flex-18/24 block relative box-border my-0 px-4 sm:px-3">
+          <div class="flex flex-col gap-2 items-stretch justify-start w-full">
+              <div>
+                  <span class="w-auto max-w-full whitespace-nowrap">
+                      <div class="inline" data-state="closed">
+                          <span class="align-middle font-normal text-[14px] leading-[24px] border border-dashed border-transparent box-content break-all px-1 -mx-1 rounded-md textLink autoTruncate">
+                              <a id="jito-bundle-link" class="text-current" href="${para_link}">${para_text}</a>
                           </span>
+                      </div>
+                      <span class="inline-flex items-center ml-1 gap-2 align-middle" id="cp-jitobundle">
+                          <div class="inline-flex align-middle" data-state="closed">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy cursor-pointer text-[#adb5bd] hover:text-link-500">
+                                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+                              </svg>
+                          </div>
                       </span>
-                  </div>
+                  </span>
               </div>
           </div>
       </div>
   `;
 
+  return row;
+}
 
-  const outerDiv = signerDiv.closest("div").parentNode.closest("div").parentNode.closest("div").parentNode;   
-  outerDiv.insertAdjacentElement("afterend", newDiv);
+function hasClass(element, className) {
+  return element.classList && element.classList.contains(className);
+}
+
+function hasDetailsColumnLayout(element) {
+  const className = element.className || "";
+
+  return (
+    hasClass(element, "box-border") &&
+    (className.includes("flex-24/24") || className.includes("md:flex-"))
+  );
+}
+
+function hasDetailsRowLayout(element) {
+  const children = Array.from(element.children || []);
+  const columnCount = children.filter(hasDetailsColumnLayout).length;
+
+  return (
+    hasClass(element, "flex") &&
+    hasClass(element, "flex-row") &&
+    hasClass(element, "flex-wrap") &&
+    (columnCount >= 2 || hasClass(element, "-mx-4") || hasClass(element, "sm:-mx-3"))
+  );
+}
+
+function findSolscanDetailsRow(labelDiv) {
+  let element = labelDiv;
+
+  while (element && element !== document.body) {
+    if (hasDetailsRowLayout(element)) {
+      return element;
+    }
+
+    element = element.parentElement;
+  }
+
+  return null;
+}
+
+function findDetailsLabelDiv(labels) {
+  const divs = document.querySelectorAll("div");
+
+  for (const label of labels) {
+    const labelDiv = Array.from(divs).find(div => div.innerText.trim() === label);
+    if (labelDiv) {
+      return labelDiv;
+    }
+  }
+
+  return null;
+}
+
+function insertCustomDiv(para_link, para_text) {
+  const targetLabelDiv = findDetailsLabelDiv(["Personal Label", "Signer"]);
+  if (!targetLabelDiv) {
+    console.log("failed to locate insertion label div");
+    return false;
+  }
+
+  const targetRow = findSolscanDetailsRow(targetLabelDiv);
+  if (!targetRow) {
+    console.log("failed to locate insertion row");
+    return false;
+  }
+
+  const existingRow = document.getElementById("jito-bundle-row");
+  if (existingRow) {
+    existingRow.remove();
+  }
+
+  targetRow.insertAdjacentElement("afterend", buildCustomBundleRow(para_link, para_text));
   return true;
 }
 
