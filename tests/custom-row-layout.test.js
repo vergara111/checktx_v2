@@ -4,6 +4,13 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'content.js'), 'utf8');
+const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'manifest.json'), 'utf8'));
+
+const photonOrigin = 'https://photon-sol.tinyastro.io/*';
+assert.ok(
+  manifest.content_scripts.some(script => script.matches.includes(photonOrigin)),
+  'content script should run on Photon token pages'
+);
 
 assert.match(
   source,
@@ -118,6 +125,7 @@ function buildRuntime() {
   const sandbox = {
     console,
     document,
+    URL,
     setTimeout() {},
     clearTimeout() {},
     window: {
@@ -137,7 +145,12 @@ function buildRuntime() {
   };
 
   vm.runInNewContext(source, sandbox);
-  return { document, insertCustomDiv: sandbox.insertCustomDiv };
+  return {
+    document,
+    extractSignatureFromLink: sandbox.extractSignatureFromLink,
+    insertCustomDiv: sandbox.insertCustomDiv,
+    showHoverNotification: sandbox.showHoverNotification,
+  };
 }
 
 function appendDetailsRow(document, container, labelText) {
@@ -159,6 +172,40 @@ function appendDetailsRow(document, container, labelText) {
   row.appendChild(valueColumn);
 
   return row;
+}
+
+{
+  const { extractSignatureFromLink } = buildRuntime();
+  const signature = '5bqRsj8x95NruTFAzG5z9KbixP7uFWhWzF94SGapdfZCMuLWFJfX47BMyjdu8agjQDwLxXC4yRDd';
+
+  assert.equal(
+    extractSignatureFromLink({
+      href: `https://solscan.io/tx/${signature}?cluster=mainnet-beta#events`,
+    }),
+    signature,
+    'Solscan tx signatures should be parsed without query strings or hashes'
+  );
+}
+
+{
+  const { document, showHoverNotification } = buildRuntime();
+  const anchor = document.createElement('a');
+  anchor.getBoundingClientRect = () => ({
+    left: 100,
+    top: 80,
+    width: 24,
+    height: 18,
+    right: 124,
+    bottom: 98,
+  });
+
+  showHoverNotification({ isBundle: false }, anchor);
+
+  const notification = document.getElementById('jito-hover-notification');
+  assert.ok(notification, 'hover notification should be created');
+  assert.equal(notification.style.left, '112px');
+  assert.equal(notification.style.top, '72px');
+  assert.equal(notification.style.transform, 'translate(-50%, -100%)');
 }
 
 {

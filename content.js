@@ -131,17 +131,22 @@ function showNotification(response) {
   }, 10000);
 }
 
-function showHoverNotification(response, x, y) {
+function showHoverNotification(response, anchorElement) {
   const isJitoBundle = response.isBundle;
   // Remove any existing hover notification
   removeHoverNotification();
+
+  const anchorRect = anchorElement.getBoundingClientRect();
+  const notificationLeft = anchorRect.left + anchorRect.width / 2;
+  const notificationTop = Math.max(8, anchorRect.top - 8);
 
   // Create a new notification element
   const notification = document.createElement('div');
   notification.id = 'jito-hover-notification';
   notification.style.position = 'fixed';
-  notification.style.left = `${x + 15}px`;
-  notification.style.top = `${y + 15}px`;
+  notification.style.left = `${notificationLeft}px`;
+  notification.style.top = `${notificationTop}px`;
+  notification.style.transform = 'translate(-50%, -100%)';
   notification.style.padding = '10px';
   notification.style.borderRadius = '5px';
   notification.style.zIndex = '10001';
@@ -219,9 +224,18 @@ function showErrorNotification() {
 }
 
 function extractSignatureFromLink(link) {
-  
-  if (link.href && link.href.includes('solscan.io/tx/')) {
-    return link.href.split('/tx/')[1];
+  if (link.href) {
+    try {
+      const url = new URL(link.href, window.location.href);
+      const pathParts = url.pathname.split('/').filter(Boolean);
+
+      if (url.hostname === 'solscan.io' && pathParts[0] === 'tx') {
+        const signature = pathParts[1];
+        return /^[1-9A-HJ-NP-Za-km-z]{32,88}$/.test(signature) ? signature : null;
+      }
+    } catch (error) {
+      return null;
+    }
   }
   
   /*
@@ -265,9 +279,6 @@ function handleLinkHover(event) {
   
   
   hoverTimeout = setTimeout(() => {
-    const x = event.clientX;
-    const y = event.clientY;
-    
     //console.log('sending message to check for link hover')
     // check Jito bundle
     chrome.runtime.sendMessage(
@@ -280,7 +291,7 @@ function handleLinkHover(event) {
         if (currentHoverSignature !== signature) return;
         
         if (response && response.success) {
-          showHoverNotification(response, x, y);
+          showHoverNotification(response, link);
         }
       }
     );

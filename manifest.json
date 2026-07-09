@@ -16,7 +16,7 @@
 
   "content_scripts": [
     {
-      "matches": ["https://solscan.io/*"],
+      "matches": ["https://solscan.io/*", "https://photon-sol.tinyastro.io/*"],
       "js": ["content.js"],
       "run_at": "document_end"
     }
