@@ -149,6 +149,7 @@ function buildRuntime() {
     document,
     extractSignatureFromLink: sandbox.extractSignatureFromLink,
     insertCustomDiv: sandbox.insertCustomDiv,
+    shortenBundleId: sandbox.shortenBundleId,
     showHoverNotification: sandbox.showHoverNotification,
   };
 }
@@ -206,6 +207,49 @@ function appendDetailsRow(document, container, labelText) {
   assert.equal(notification.style.left, '112px');
   assert.equal(notification.style.top, '72px');
   assert.equal(notification.style.transform, 'translate(-50%, -100%)');
+}
+
+{
+  const { document, shortenBundleId, showHoverNotification } = buildRuntime();
+  const bundleId = '4caf8725c75b31a6982a46a9330963156cad22c8c9bd94f9c0d62d4bdf604e7e';
+  const anchor = document.createElement('a');
+  anchor.getBoundingClientRect = () => ({
+    left: 100,
+    top: 80,
+    width: 24,
+    height: 18,
+    right: 124,
+    bottom: 98,
+  });
+
+  assert.equal(shortenBundleId(bundleId), '4ca...e7e');
+  assert.equal(shortenBundleId('abc123'), 'abc123');
+  assert.equal(shortenBundleId(), '');
+
+  showHoverNotification({
+    isBundle: true,
+    validatorTip: '0.001',
+    bundleUrl: `https://explorer.jito.wtf/bundle/${bundleId}`,
+    bundleId,
+  }, anchor);
+
+  const notification = document.getElementById('jito-hover-notification');
+  const bundleIdLine = document.getElementById('jito-hover-bundle-id');
+  assert.equal(notification.children[0].textContent, '✓ Jito bundle (tip: 0.001)');
+  assert.ok(bundleIdLine, 'bundle ID should render on a separate line');
+  assert.equal(bundleIdLine.tagName, 'DIV');
+  assert.equal(bundleIdLine.textContent, '4ca...e7e');
+
+  showHoverNotification({
+    isBundle: true,
+    validatorTip: '0.001',
+    bundleUrl: 'https://explorer.jito.wtf/',
+  }, anchor);
+  assert.equal(
+    document.getElementById('jito-hover-bundle-id'),
+    null,
+    'missing bundle IDs should not create an empty second line'
+  );
 }
 
 {

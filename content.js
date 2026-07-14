@@ -71,6 +71,18 @@ function removeHoverNotification() {
   }
 }
 
+function shortenBundleId(bundleId) {
+  if (typeof bundleId !== 'string' || bundleId.length === 0) {
+    return '';
+  }
+
+  if (bundleId.length <= 6) {
+    return bundleId;
+  }
+
+  return `${bundleId.slice(0, 3)}...${bundleId.slice(-3)}`;
+}
+
 function showNotification(response) {
   // Remove any existing notifications first
   const isJitoBundle = response.isBundle;
@@ -170,6 +182,15 @@ function showHoverNotification(response, anchorElement) {
     adLink.style.textDecoration = 'underline';
     adLink.style.fontWeight = 'bold';
     notification.appendChild(adLink);
+
+    const shortenedBundleId = shortenBundleId(response.bundleId);
+    if (shortenedBundleId) {
+      const bundleIdLine = document.createElement('div');
+      bundleIdLine.id = 'jito-hover-bundle-id';
+      bundleIdLine.textContent = shortenedBundleId;
+      bundleIdLine.style.marginTop = '2px';
+      notification.appendChild(bundleIdLine);
+    }
   } else {
     notification.style.backgroundColor = '#f44336';
     notification.style.color = 'white';
